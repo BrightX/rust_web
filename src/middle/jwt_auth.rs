@@ -1,9 +1,9 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::future::{ready, Ready};
 
 use actix_web::{
     dev::{forward_ready, Service, ServiceRequest, ServiceResponse, Transform},
-    Error, error, http::header::HeaderValue,
+    Error, error, http::header::HeaderValue, web::Query,
 };
 use futures_util::future::LocalBoxFuture;
 use jsonwebtoken::{Algorithm, DecodingKey, Validation};
@@ -67,9 +67,13 @@ impl<S, B> Service<ServiceRequest> for AuthMiddleware<S>
             return Box::pin(async move { Ok(fut.await?) });
         }
 
-        let token = req.headers().get("Authorization")
+        let mut token = req.headers().get("Authorization")
             .unwrap_or(&HeaderValue::from_str("").unwrap())
             .to_str().unwrap().replace("Bearer ", "");
+        if token.is_empty() {
+            token = Query::<HashMap<String, String>>::from_query(req.query_string()).unwrap()
+                .get("access_token").unwrap_or(&"".to_string()).to_string();
+        }
         // println!("token: {}", &token);
         let rst = jsonwebtoken::decode::<AccessToken>(&token, &self.decoding_key, &self.validation);
         if rst.is_err() {
