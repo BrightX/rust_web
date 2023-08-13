@@ -2,6 +2,12 @@ use actix_web::{App, get, HttpServer, middleware, Responder, web};
 
 mod api;
 mod middle;
+mod common;
+
+#[get("/hi/{name}")]
+async fn say_hi(name: web::Path<String>) -> impl Responder {
+    common::JsonResponse::ok().with_msg(name.into_inner())
+}
 
 #[get("/hello/{name}")]
 async fn greet(name: web::Path<String>) -> impl Responder {
@@ -16,8 +22,9 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         let api_scope = web::scope("/api")
             .wrap(middleware::Logger::default())
-            .wrap(middle::jwt_auth::JwtAuth::default())
+            .wrap(middle::JwtAuth::default())
             .service(greet)
+            .service(say_hi)
             .service(api::get_user)
             .service(api::auth)
             .service(api::refresh)

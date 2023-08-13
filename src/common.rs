@@ -1,27 +1,49 @@
-use std::any::Any;
+use actix_web::{HttpRequest, HttpResponse, Responder, web};
+use actix_web::body::EitherBody;
+use serde::Serialize;
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Deserialize, Serialize)]
-#[allow(non_snake_case)]
-pub struct JsonResponse<T: Any> {
-    success: bool,
+#[derive(Serialize)]
+#[allow(non_snake_case, dead_code)]
+pub struct JsonResponse<T: Serialize> {
     status: i32,
+    success: bool,
     msg: String,
-    data: T,
-    total: i64,
+    data: Option<T>,
+    total: Option<i64>,
 }
 
-impl<T: Any> JsonResponse<T> {
-    pub fn build(data: T) -> JsonResponse<T> {
-        JsonResponse { success: true, status: 200, msg: String::from("success"), data, total: 1 }
+impl<T: Serialize> Responder for JsonResponse<T> {
+    type Body = EitherBody<String>;
+
+    fn respond_to(self, req: &HttpRequest) -> HttpResponse<Self::Body> {
+        web::Json(self).respond_to(req)
+    }
+}
+
+#[allow(dead_code)]
+impl<T: Serialize> JsonResponse<T> {
+    pub fn build(data: Option<T>) -> Self {
+        JsonResponse { success: true, status: 200, msg: "success".to_string(), data, total: None }
     }
 
-    pub fn ok() -> JsonResponse<dyn Any> {
+    pub fn with_msg(mut self, msg: String) -> Self {
+        self.msg = msg;
+        self
+    }
+
+    pub fn set_total(mut self, total: i64) -> Self {
+        self.total = Some(total);
+        self
+    }
+}
+
+#[allow(dead_code)]
+impl JsonResponse<bool> {
+    pub fn ok() -> Self {
         JsonResponse::build(None)
     }
 
-    pub fn error(msg: String, status: i32) -> JsonResponse<dyn Any> {
-        JsonResponse { success: false, status, msg, data: None, total: 1 }
+    pub fn error(msg: String, status: i32) -> Self {
+        JsonResponse { success: false, status, msg, data: None, total: None }
     }
 }
