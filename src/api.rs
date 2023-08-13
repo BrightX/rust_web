@@ -22,10 +22,10 @@ pub async fn get_user() -> web::Json<User> {
     // let passwd = hash("admin123", 10);
     // let ver = verify("123456", "$2a$10$AHbCM2O/BdscPmgTXdW5.OzSEBvaxBLKQLFklQkFextV8EsoTplMC");
     web::Json(User {
-        username: "张三".parse().unwrap(),
+        username: "张三".to_string(),
         age: 18,
         createTime: Local::now(),
-        // password: Option::from(passwd.unwrap()),
+        // password: Some(passwd.unwrap()),
         password: None,
         // ver: ver.unwrap(),
         ver: true,
