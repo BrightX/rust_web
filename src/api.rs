@@ -61,21 +61,21 @@ pub async fn auth(auth: web::Query<AuthQuery>) -> web::Json<AuthToken> {
     let at_encode_key: EncodingKey = EncodingKey::from_secret("my_secret_access_token".as_ref());
     let rt_encode_key: EncodingKey = EncodingKey::from_secret("my_secret_refresh_token".as_ref());
 
-    let a_uid = String::from("a1");
-    let r_uid = String::from("a1");
+    let a_uid = "a1".to_string();
+    let r_uid = "a1".to_string();
     let at = AccessToken {
-        uid: Option::from(a_uid),
-        username: Option::from(String::from(&auth.username)),
+        uid: Some(a_uid),
+        username: Some(auth.username.clone()),
         exp: Local::now().timestamp() + 3600 * 2,
     };
     let rt = AccessToken {
-        uid: Option::from(r_uid),
-        username: Option::from(String::from(&auth.username)),
+        uid: Some(r_uid),
+        username: Some(auth.username.clone()),
         exp: Local::now().timestamp() + 3600 * 24 * 14,
     };
     return web::Json(AuthToken {
-        access_token: Option::from(jsonwebtoken::encode(&head, &at, &at_encode_key).unwrap()),
-        refresh_token: Option::from(jsonwebtoken::encode(&head, &rt, &rt_encode_key).unwrap()),
+        access_token: Some(jsonwebtoken::encode(&head, &at, &at_encode_key).unwrap()),
+        refresh_token: Some(jsonwebtoken::encode(&head, &rt, &rt_encode_key).unwrap()),
         msg: None,
     });
 }
@@ -99,22 +99,22 @@ pub async fn refresh(query: web::Query<RefreshQuery>) -> impl Responder {
         return web::Json(AuthToken {
             access_token: None,
             refresh_token: None,
-            msg: Option::from(result.err().unwrap().to_string()),
+            msg: Some(result.err().unwrap().to_string()),
         });
     }
 
     let claims = result.unwrap().claims;
     let at = AccessToken {
-        uid: Option::from(claims.uid.clone()),
-        username: Option::from(claims.username.clone()),
+        uid: claims.uid.clone(),
+        username: claims.username.clone(),
         exp: Local::now().timestamp() + 3600 * 2,
     };
     let at = jsonwebtoken::encode(&head, &at, &at_encode_key).unwrap();
 
     let rt = if claims.exp < Local::now().timestamp() - 3600 * 6 {
         let rt = AccessToken {
-            uid: Option::from(claims.uid.clone()),
-            username: Option::from(claims.username.clone()),
+            uid: claims.uid.clone(),
+            username: claims.username.clone(),
             exp: Local::now().timestamp() + 3600 * 24 * 14,
         };
         jsonwebtoken::encode(&head, &rt, &rt_encode_key).unwrap()
@@ -123,8 +123,8 @@ pub async fn refresh(query: web::Query<RefreshQuery>) -> impl Responder {
     };
 
     web::Json(AuthToken {
-        access_token: Option::from(at),
-        refresh_token: Option::from(rt),
+        access_token: Some(at),
+        refresh_token: Some(rt),
         msg: None,
     })
 }

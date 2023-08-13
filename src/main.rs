@@ -16,7 +16,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         let api_scope = web::scope("/api")
             .wrap(middleware::Logger::default())
-            .wrap(middle::jwt_auth::JwtAuth)
+            .wrap(middle::jwt_auth::JwtAuth::default())
             .service(greet)
             .service(api::get_user)
             .service(api::auth)

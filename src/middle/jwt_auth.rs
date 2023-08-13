@@ -14,7 +14,19 @@ use crate::api::AccessToken;
 // 1. Middleware initialization, middleware factory gets called with
 //    next service in chain as parameter.
 // 2. Middleware 's call method gets called with normal request.
-pub struct JwtAuth;
+#[derive(Clone)]
+pub struct JwtAuth(HashSet<String>, DecodingKey, Validation);
+
+impl Default for JwtAuth {
+    fn default() -> Self {
+        let lst = ["/api/auth", "/api/refresh", ];
+        let whitelist = lst.iter().map(|i| i.to_string()).collect::<HashSet<String>>();
+        let decoding_key: DecodingKey = DecodingKey::from_secret("my_secret_access_token".as_ref());
+        let validation = Validation::new(Algorithm::HS512);
+
+        Self(whitelist, decoding_key, validation)
+    }
+}
 
 // Middleware factory is `Transform` trait
 // `S` - type of the next service
@@ -32,12 +44,12 @@ impl<S, B> Transform<S, ServiceRequest> for JwtAuth
     type Future = Ready<Result<Self::Transform, Self::InitError>>;
 
     fn new_transform(&self, service: S) -> Self::Future {
-        let lst = ["/api/auth", "/api/refresh", ];
-        let whitelist = lst.iter().map(|i| i.to_string()).collect::<HashSet<String>>();
-        let decoding_key: DecodingKey = DecodingKey::from_secret("my_secret_access_token".as_ref());
-        let validation = Validation::new(Algorithm::HS512);
-
-        ready(Ok(AuthMiddleware { service, whitelist, decoding_key, validation }))
+        ready(Ok(AuthMiddleware {
+            service,
+            whitelist: self.0.clone(),
+            decoding_key: self.1.clone(),
+            validation: self.2.clone()
+        }))
     }
 }
 
