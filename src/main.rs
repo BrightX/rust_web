@@ -6,7 +6,7 @@ mod common;
 
 #[get("/hi/{name}")]
 async fn say_hi(name: web::Path<String>) -> impl Responder {
-    common::JsonResponse::ok().with_msg(name.into_inner())
+    common::JsonResponse::<bool>::ok().with_msg(name.into_inner())
 }
 
 #[get("/hello/{name}")]

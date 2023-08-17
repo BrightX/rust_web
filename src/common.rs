@@ -26,6 +26,14 @@ impl<T: Serialize> JsonResponse<T> {
         JsonResponse { success: true, status: 200, msg: "success".to_string(), data, total: None }
     }
 
+    pub fn ok() -> Self {
+        JsonResponse::build(None)
+    }
+
+    pub fn error(msg: String, status: i32) -> Self {
+        JsonResponse { success: false, status, msg, data: None, total: None }
+    }
+
     pub fn with_msg(mut self, msg: String) -> Self {
         self.msg = msg;
         self
@@ -34,16 +42,5 @@ impl<T: Serialize> JsonResponse<T> {
     pub fn set_total(mut self, total: i64) -> Self {
         self.total = Some(total);
         self
-    }
-}
-
-#[allow(dead_code)]
-impl JsonResponse<bool> {
-    pub fn ok() -> Self {
-        JsonResponse::build(None)
-    }
-
-    pub fn error(msg: String, status: i32) -> Self {
-        JsonResponse { success: false, status, msg, data: None, total: None }
     }
 }
