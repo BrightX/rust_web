@@ -20,3 +20,4 @@ bcrypt = "0.13"
 #[target.x86_64-unknown-linux-musl]
 ##linker = "rust-lld"
 #linker = "x86_64-linux-musl-gcc"
+#liker = "D:/gcc-linaro-7.5.0-2019.12-i686-mingw32_aarch64-elf/bin/aarch64-elf-gcc.exe"

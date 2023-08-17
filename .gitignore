@@ -1,5 +1,19 @@
-/target
+.DS_Store
+dist
+*.local
+
+logs
+*.log
+
+target/
 Cargo.lock
 
-.idea/
+.vscode/*
+!.vscode/extensions.json
+.idea
 *.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
